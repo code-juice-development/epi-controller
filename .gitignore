@@ -1,2 +1,8 @@
 /build/
 /dist/
+/database/
+/nbproject/
+build.xml
+derby.log
+manifest.mf
+

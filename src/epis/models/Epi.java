@@ -1,10 +1,12 @@
 package epis.models;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 /**
  * Model class of EPI
@@ -12,28 +14,35 @@ import javax.persistence.Id;
  * @since  28/08/2020
  */
 @Entity(name = "epis")
-public class Epi implements Serializable {
+public class Epi extends DataObject {
 
     @Id
     @GeneratedValue
     @Column(name = "id")
     private long id;
-
+    
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "codigoCa", nullable = false)
-    private String codigoCa;
+    @Column(name = "codeCa", nullable = false)
+    private String codeCa;
 
-    @Column(name = "periodicidade", nullable = false)
-    private Integer periodicidade;
+    @Column(name = "frequency", nullable = false)
+    private Integer frequency;
 
+    @ManyToMany(mappedBy = "epis")
+    private List<Employee> employees = new ArrayList<>();
+    
     public Epi() {}
 
-    public Epi(String name, String codigoCa, Integer periodicidade) {
+    public Epi(long id) {
+        this.id = id;
+    }
+    
+    public Epi(String name, String codeCa, Integer frequency) {
         this.name = name;
-        this.codigoCa = codigoCa;
-        this.periodicidade = periodicidade;
+        this.codeCa = codeCa;
+        this.frequency = frequency;
     }
     
     public long getId() {
@@ -52,20 +61,37 @@ public class Epi implements Serializable {
         this.name = name;
     }
 
-    public String getCodigoCa() {
-        return codigoCa;
+    public String getCodeCa() {
+        return codeCa;
     }
 
-    public void setCodigoCa(String codigoCa) {
-        this.codigoCa = codigoCa;
+    public void setCodeCa(String codeCa) {
+        this.codeCa = codeCa;
     }
 
-    public Integer getPeriodicidade() {
-        return periodicidade;
+    public Integer getFrequency() {
+        return frequency;
     }
 
-    public void setPeriodicidade(Integer periodicidade) {
-        this.periodicidade = periodicidade;
+    public void setFrequency(Integer frequency) {
+        this.frequency = frequency;
+    }
+
+    public List<Employee> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(List<Employee> employees) {
+        this.employees = employees;
+    }
+    
+    public int getMonthInterval() {
+        return this.getFrequency() / 30;
+    }
+    
+    @Override
+    public String toString() {
+        return this.name;
     }
     
 }

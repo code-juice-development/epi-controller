@@ -1,6 +1,5 @@
 package epis.models;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -8,8 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-
+import javax.persistence.Transient;
 
 /**
  * Model class of Employee
@@ -17,13 +18,13 @@ import javax.persistence.ManyToMany;
  * @since  28/07/2020
  */
 @Entity(name = "employees")
-public class Employee implements Serializable {
-
+public class Employee extends DataObject {
+ 
     @Id
     @GeneratedValue
     @Column(name = "id")
     private long id;
- 
+    
     @Column(name = "name", nullable = false)
     private String name;
     
@@ -36,9 +37,17 @@ public class Employee implements Serializable {
     @Column(name = "active", nullable = false)
     private boolean active;
     
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @ManyToMany(cascade={ CascadeType.REFRESH })
+    @JoinTable(
+        name = "Employee_Epi", 
+        joinColumns = { @JoinColumn(name = "employee_id") }, 
+        inverseJoinColumns = { @JoinColumn(name = "epi_id") }
+    )
     private List<Epi> epis = new ArrayList<>();
-
+    
+    @Transient
+    private boolean selected;
+    
     public Employee() {}
 
     public Employee(String name, String cpf, String occupation, boolean active) {
@@ -47,7 +56,7 @@ public class Employee implements Serializable {
         this.occupation = occupation;
         this.active = active;
     }
-    
+
     public long getId() {
         return id;
     }
@@ -55,7 +64,7 @@ public class Employee implements Serializable {
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public String getName() {
         return name;
     }
@@ -96,9 +105,17 @@ public class Employee implements Serializable {
         this.epis = epis;
     }
 
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+    
     @Override
     public String toString() {
-        return "Employee {" + "id=" + id + ", name=" + name + ", cpf=" + cpf + ", occupation=" + occupation + ", active=" + active + ", epis=" + epis.toString() + '}';
+        return this.name;
     }
     
 }

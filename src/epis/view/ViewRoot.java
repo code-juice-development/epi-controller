@@ -21,7 +21,7 @@ import static javax.swing.SwingConstants.CENTER;
  * @author Jean Poffo
  * @since  28/07/2020
  */
-public final class ViewRoot extends JFrame {
+public final class ViewRoot extends JFrame implements View {
 
     private JToolBar toolBar;
     private JButton buttonEmployees;
@@ -40,21 +40,19 @@ public final class ViewRoot extends JFrame {
     private ControllerRoot controller;
     
     public ViewRoot(ControllerRoot controller) throws HeadlessException {
-        super("EPI Controller");
-        
         this.controller = controller;
-        
-        super.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        super.setMinimumSize(new Dimension(1200, 800));
-        super.setLocationRelativeTo(null);
-        super.setResizable(false);
-        super.setIconImage(new ImageIcon(getClass().getResource("/epis/resources/helmet-mini.png")).getImage());
         
         this.initComponents();
         this.addListeners();
+        this.setTitle("EPI Controller");
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setMinimumSize(new Dimension(800, 600));
+        this.setIconImage(new ImageIcon(getClass().getResource("/epis/resources/helmet.png")).getImage());
+        this.setLocationRelativeTo(null);
     }
     
-    private void initComponents() {
+    @Override
+    public void initComponents() {
         this.toolBar = new JToolBar();
         this.buttonEmployees = new JButton();
         this.buttonEpis = new JButton();
@@ -137,7 +135,8 @@ public final class ViewRoot extends JFrame {
         this.pack();
     }
     
-    private void addListeners() {
+    @Override
+    public void addListeners() {
         this.menuItemExit.addActionListener(e -> this.controller.callActionCloseSystem());
         this.menuItemEmployees.addActionListener(e -> this.controller.callActionOpenEmployeesDisplay());
         this.menuItemEpis.addActionListener(e -> this.controller.callActionOpenEpisDisplay());

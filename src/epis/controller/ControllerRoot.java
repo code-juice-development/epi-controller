@@ -1,6 +1,8 @@
 package epis.controller;
 
-import epis.utils.Message;
+import epis.utils.MessageUtil;
+import epis.view.ViewEmployees;
+import epis.view.ViewEpis;
 
 /**
  * Controller Root of Application
@@ -25,19 +27,22 @@ public final class ControllerRoot {
     }
     
     public void callActionOpenEmployeesDisplay() {
-        
+        new ViewEmployees().setVisible(true);
     }
     
     public void callActionOpenEpisDisplay() {
-        
+        new ViewEpis().setVisible(true);
     }
     
     public void callActionAboutSystemDisplay() {
-        Message.information("Desenvolvido por Jean Poffo", "Sobre");
+        MessageUtil.information("Desenvolvido por Jean Poffo", "Sobre");
     }
     
+    /**
+     * @todo it is not the best thing to cople the Controller
+     */
     public void callActionOpenReportDisplay() {
-        
+        new ControllerReportEmployeeEpi().callActionAdd();
     }
     
 }
