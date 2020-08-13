@@ -6,7 +6,6 @@ import epis.models.Epi;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -24,7 +23,7 @@ public class ViewEditEpis extends ViewEdit {
     private JLabel labelCodeCa;
     private JTextField textFieldCodeCa;
     private JLabel labelFrequency;
-    private JComboBox comboBoxFrequency;
+    private JTextField textFieldFrequency;
     
     public ViewEditEpis(DataObject entity, ProcessAction process) {
         super(entity, process);
@@ -41,7 +40,7 @@ public class ViewEditEpis extends ViewEdit {
         this.labelCodeCa = new JLabel();
         this.textFieldCodeCa = new JTextField();
         this.labelFrequency = new JLabel();
-        this.comboBoxFrequency = new JComboBox(new String[] {"30", "60", "90"});
+        this.textFieldFrequency = new JTextField();
         
         this.labelName.setText("Nome:");
         this.labelCodeCa.setText("Código CA:");
@@ -66,7 +65,7 @@ public class ViewEditEpis extends ViewEdit {
         hGroup.addGroup(groupLayout.createParallelGroup()
             .addComponent(this.textFieldName)
             .addComponent(this.textFieldCodeCa)
-            .addComponent(this.comboBoxFrequency)
+            .addComponent(this.textFieldFrequency)
         );
         
         groupLayout.setHorizontalGroup(hGroup);
@@ -75,7 +74,7 @@ public class ViewEditEpis extends ViewEdit {
         
         vGroup.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(this.labelName).addComponent(this.textFieldName));
         vGroup.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(this.labelCodeCa).addComponent(this.textFieldCodeCa));
-        vGroup.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(this.labelFrequency).addComponent(this.comboBoxFrequency));
+        vGroup.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(this.labelFrequency).addComponent(this.textFieldFrequency));
         groupLayout.setVerticalGroup(vGroup);
         
         this.panelComponents.add(this.panelEpi);
@@ -85,9 +84,11 @@ public class ViewEditEpis extends ViewEdit {
     public void bindDataToFields() {
         Epi epi = (Epi) this.getDataObject();
         
+        String frequency = epi.getFrequency() == null ? "" : Integer.toString(epi.getFrequency());
+        
         this.textFieldName.setText(epi.getName());
         this.textFieldCodeCa.setText(epi.getCodeCa());
-        this.comboBoxFrequency.setSelectedItem(String.valueOf(epi.getFrequency()));
+        this.textFieldFrequency.setText(frequency);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class ViewEditEpis extends ViewEdit {
         
         epi.setName(this.textFieldName.getText());
         epi.setCodeCa(this.textFieldCodeCa.getText());
-        epi.setFrequency(Integer.parseInt((String) this.comboBoxFrequency.getSelectedItem()));
+        epi.setFrequency(Integer.parseInt(this.textFieldFrequency.getText()));
     }
 
     @Override
@@ -107,6 +108,10 @@ public class ViewEditEpis extends ViewEdit {
         
         if(this.textFieldCodeCa.getText().isEmpty()) {
             this.addError("Não foi informado o Código CA do EPI");
+        }
+        
+        if(this.textFieldFrequency.getText().isEmpty()) {
+            this.addError("Não foi informado a frequência do EPI");
         }
         
         return super.validatedData();

@@ -7,7 +7,6 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.PdfPTable;
 import epis.models.DataObject;
@@ -24,8 +23,10 @@ import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import static java.time.temporal.ChronoUnit.DAYS;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,8 +50,12 @@ public class ControllerReportEmployeeEpi extends ControllerMaintenance {
         ReportEmployeeEpi reportEmployeeEpi = (ReportEmployeeEpi) entity;
         
         if(directoryChooser.callSelectDirectory()) {
-            this.processReportControllEpi(reportEmployeeEpi);
-            this.processReportListEpi(reportEmployeeEpi);
+            new Thread(() -> {
+                this.processReportControllEpi(reportEmployeeEpi);
+                this.processReportListEpi(reportEmployeeEpi);
+                
+                MessageUtil.information("Relatório gerado com sucesso", "Relatório");
+            }).start();
         }
         else {
             MessageUtil.warning("Não foi selecionado nenhum diretório", "Erro");
@@ -119,19 +124,51 @@ public class ControllerReportEmployeeEpi extends ControllerMaintenance {
                 tableEmployeeEpis.addCell(new Phrase("Data", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
                 tableEmployeeEpis.addCell(new Phrase("Assinatura", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
                 
+                List episToOrder = new ArrayList();
+                
                 for (Epi epi : employee.getEpis()) {
                     LocalDate localDateInitial = LocalDate.parse(reportEmployeeEpi.getInitialDate(), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
                     LocalDate localDateFinal = LocalDate.parse(reportEmployeeEpi.getFinalDate(), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
                     
                     do {
-                        tableEmployeeEpis.addCell(new Phrase(epi.getName()));
-                        tableEmployeeEpis.addCell(new Phrase(epi.getCodeCa()));
-                        tableEmployeeEpis.addCell(new Phrase(localDateInitial.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
-                        tableEmployeeEpis.addCell(new Phrase(""));
+                        episToOrder.add(new Object[] {epi, localDateInitial});
                         
-                        localDateInitial = localDateInitial.plusMonths(epi.getMonthInterval());
+                        localDateInitial = localDateInitial.plusDays(epi.getFrequency());
                         
                     } while(DAYS.between(localDateInitial, localDateFinal) >= 0);
+                }  
+                
+                LocalDate dataAtual;
+                LocalDate proximaData;
+                Object[] atual;
+                Object[] proximo;
+                
+                // Bubble Sort = Dates
+                for (int i = 0; i < episToOrder.size(); i++) {
+                    for (int j = 0; j < episToOrder.size() - i - 1; j++) {
+                        atual = (Object[]) episToOrder.get(j);
+                        proximo = (Object[]) episToOrder.get(j + 1);
+                        
+                        dataAtual = (LocalDate) atual[1];
+                        proximaData = (LocalDate) proximo[1];                        
+
+                        if (dataAtual.compareTo(proximaData) > 0) {
+                            episToOrder.set(j + 1, atual);
+                            episToOrder.set(j, proximo);
+                        }
+                    }
+                }
+                
+                for (Object object : episToOrder) {
+                    Object[] actual = (Object[]) object;
+                    
+                    Epi epi = (Epi) actual[0];
+                    LocalDate date = (LocalDate) actual[1];
+                    
+                    tableEmployeeEpis.addCell(new Phrase(epi.getName()));
+                    tableEmployeeEpis.addCell(new Phrase(epi.getCodeCa()));
+                    tableEmployeeEpis.addCell(new Phrase(date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+                    tableEmployeeEpis.addCell(new Phrase(""));   
                 }
                 
                 document.add(tableEmployeeEpis);
@@ -167,19 +204,20 @@ public class ControllerReportEmployeeEpi extends ControllerMaintenance {
             tableDate.addCell(new Phrase("Data Inicial:", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
             tableDate.addCell(new Phrase(reportEmployeeEpi.getInitialDate()));
             tableDate.addCell(new Phrase("Data Final:", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
-            tableDate.addCell(new Phrase(reportEmployeeEpi.getInitialDate()));
+            tableDate.addCell(new Phrase(reportEmployeeEpi.getFinalDate()));
 
             document.add(tableDate);
             
-            PdfPTable tableEpis = new PdfPTable(2);
+            PdfPTable tableEpis = new PdfPTable(3);
             tableEpis.setWidthPercentage(100);
-            tableEpis.setWidths(new float[] { 80, 20 });
+            tableEpis.setWidths(new float[] { 60, 20, 20 });
             tableEpis.setHorizontalAlignment(Element.ALIGN_LEFT);
             tableEpis.setTotalWidth(PageSize.A4.getWidth() - 80);
             tableEpis.setLockedWidth(true);
             tableEpis.getDefaultCell().setFixedHeight(20);
             
             tableEpis.addCell(new Phrase("Descrição", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
+            tableEpis.addCell(new Phrase("Código CA", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
             tableEpis.addCell(new Phrase("Quantidade", new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD)));
             
             Map itemQuantidade = new HashMap<String, Integer>();
@@ -190,15 +228,17 @@ public class ControllerReportEmployeeEpi extends ControllerMaintenance {
                     LocalDate localDateFinal = LocalDate.parse(reportEmployeeEpi.getFinalDate(), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
                     
                     do {
+                        String key = epi.getName() + "%" + epi.getCodeCa();
+                        
                         int amount = 1;
-                    
-                        if(itemQuantidade.get(epi.getName()) != null) {
-                            amount = (int) itemQuantidade.get(epi.getName()) + 1;
+                        
+                        if(itemQuantidade.get(key) != null) {
+                            amount = (int) itemQuantidade.get(key) + 1;
                         }
 
-                        itemQuantidade.put(epi.getName(), amount);
+                        itemQuantidade.put(key, amount);
                         
-                        localDateInitial = localDateInitial.plusMonths(epi.getMonthInterval());
+                        localDateInitial = localDateInitial.plusDays(epi.getFrequency());
                         
                     } while(DAYS.between(localDateInitial, localDateFinal) >= 0);
                 }
@@ -207,8 +247,12 @@ public class ControllerReportEmployeeEpi extends ControllerMaintenance {
             for (Iterator it = itemQuantidade.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<String,Integer> pair = (Map.Entry<String,Integer>) it.next();
                 
-                tableEpis.addCell(new Phrase(String.valueOf(pair.getKey())));
-                tableEpis.addCell(new Phrase(String.valueOf(pair.getValue())));
+                String[] nameAndCode = String.valueOf(pair.getKey()).split("%");
+                String quantity = String.valueOf(pair.getValue());
+                
+                tableEpis.addCell(new Phrase(nameAndCode[0]));
+                tableEpis.addCell(new Phrase(nameAndCode[1]));
+                tableEpis.addCell(new Phrase(quantity));
             }
             
             document.add(tableEpis);

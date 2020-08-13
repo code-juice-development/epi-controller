@@ -131,7 +131,7 @@ public class ViewEditReportEmployeeEpi extends ViewEdit {
         }
         
         if(!this.validateDateInitialLessThanFinal()) {
-            this.addError("Data final não pode ser maior que a data inicial");
+            this.addError("Data inicial não pode ser maior que a data final");
         }
         
         return super.validatedData();
@@ -162,10 +162,10 @@ public class ViewEditReportEmployeeEpi extends ViewEdit {
     }
     
     private boolean validateDateInitialLessThanFinal() {
-        int dateInitial = Integer.parseInt(StringUtil.removeStrangeCharacter(this.textFieldInitialDate.getText()));
-        int dateFinal = Integer.parseInt(StringUtil.removeStrangeCharacter(this.textFieldFinalDate.getText()));
+        LocalDate localDateInitial = LocalDate.parse(this.textFieldInitialDate.getText(), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
+        LocalDate localDateFinal = LocalDate.parse(this.textFieldFinalDate.getText(), DateTimeFormatter.ofPattern("dd/MM/uuuu"));
         
-        return dateInitial <= dateFinal;
+        return localDateInitial.compareTo(localDateFinal) <= 0;
     }
     
 }
