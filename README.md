@@ -15,10 +15,10 @@ ___
 
 ___
 
-<img src="https://readme-maker.herokuapp.com/uploads/6313f764f846bed1-1.png" width="1200">
-<img src="https://readme-maker.herokuapp.com/uploads/ba0a2888a5dc2a27-2.png" width="1200">
-<img src="https://readme-maker.herokuapp.com/uploads/17bc233286e8c5b0-3.png" width="1200">
-<img src="https://readme-maker.herokuapp.com/uploads/319cbb916b37aad2-4.png" width="1200">
+<img src="https://readme-maker.herokuapp.com/uploads/6313f764f846bed1-1.png" width="800">
+<img src="https://readme-maker.herokuapp.com/uploads/ba0a2888a5dc2a27-2.png" width="800">
+<img src="https://readme-maker.herokuapp.com/uploads/17bc233286e8c5b0-3.png" width="400">
+<img src="https://readme-maker.herokuapp.com/uploads/319cbb916b37aad2-4.png" width="300">
 
 ## :information_source: Sobre
 
